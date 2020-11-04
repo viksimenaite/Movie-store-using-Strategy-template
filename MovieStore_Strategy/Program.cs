@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace MovieStore_Strategy
 {
@@ -7,15 +8,6 @@ namespace MovieStore_Strategy
     {
         static void Main(string[] args)
         {
-            MovieStore movieStore = new MovieStore(
-                new LowPriceMovieStoreStrategy(),
-                new FamilyFriendlyMovieStoreStrategy());
-            /*
-            MovieStore movieStore = new MovieStore(
-                new LuxuryMovieStoreStrategy(),
-                new AdultsMovieStoreStrategy());
-            */
-
             Client client = new Client("Tom", "Smith", "tommy2000", "123", new DateTime(2015, 5, 1), new DateTime(2000, 2, 9));
 
             List<Movie> movieList = new List<Movie>
@@ -25,23 +17,67 @@ namespace MovieStore_Strategy
                 new Movie("Alone", new DateTime(2020, 2, 1), MPAARating.R, 10.1)
             };
 
-            Console.WriteLine("Welcome to the movie store!\r\n");
+            Console.WriteLine("You would like to enter:");
+            Console.WriteLine("1 - movie store\r\n2 - movie rental");
+            Console.WriteLine("Enter your answer:");
+            if(GetIntInput(2) == 1)
+            {
+                ServeMovieStoreClient(movieList, client);
+            }
+            else
+            {
+                ServeMovieRentalClient(movieList, client);
+            }
+        }
 
+        static int GetIntInput(int bound)
+        {
+            int input;
+            while (!int.TryParse(Console.ReadLine(), out input) || input > bound || input < 1)
+            {
+                Console.WriteLine("\r\nYou've entered an invalid number. Try again:");
+            }
+            return input;
+        }
+
+        static int AskWhichMovieToGet(List<Movie> movieList)
+        {
+            Console.WriteLine("\r\nWe are offering the following movies:");
             int count = 1;
+            foreach (Movie movie in movieList)
+            {
+                Console.WriteLine(count.ToString() + ". " + movie.Name);
+                count++;
+            }
+
+            Console.WriteLine("\r\nEnter the number of the movie you would like to get:");
+            return GetIntInput(movieList.Count);
+        }
+
+        static Boolean AskIfExit()
+        {
+            Console.WriteLine("Would you like to exit the program?");
+            Console.WriteLine("1 - yes\r\n2 - no");
+            Console.WriteLine("Enter your answer:");
+            return GetIntInput(2) == 1;
+        }
+
+        static void ServeMovieStoreClient(List<Movie> movieList, Client client)
+        {
+            MovieStore movieStore = new MovieStore(
+              new LowPriceMovieStoreStrategy(),
+              new FamilyFriendlyMovieStoreStrategy());
+            /*
+            MovieStore movieStore = new MovieStore(
+                new LuxuryMovieStoreStrategy(),
+                new AdultsMovieStoreStrategy());
+            */
+
+            Console.WriteLine("\r\nWelcome to the movie store!\r\n");
+
             while (true)
             {
-                Console.WriteLine("\r\nWe are offering the following movies:");
-
-                foreach (Movie movie in movieList)
-                {
-                    Console.WriteLine(count.ToString() + ". " + movie.Name);
-                    count++;
-                }
-                count = 1;
-
-                Console.WriteLine("\r\nEnter the number of the movie you would like to get:");
-
-                int index = GetIntInput(movieList.Count);
+                int index = AskWhichMovieToGet(movieList);
 
                 double moviePrice = movieStore.Estimate(client, movieList[index - 1]);
                 if (moviePrice > 0)
@@ -53,26 +89,49 @@ namespace MovieStore_Strategy
                     Console.WriteLine("\r\nSorry, this movie is not suitable for you\r\n");
                 }
 
-                Console.WriteLine("Would you like to exit the program?");
-                Console.WriteLine("1 - yes\r\n2 - no");
-                Console.WriteLine("Enter your answer:");
-                if (GetIntInput(2) == 1)
+                if (AskIfExit())
                 {
                     break;
                 }
-
             }
-
         }
 
-        static int GetIntInput(int bound)
+        static void ServeMovieRentalClient(List<Movie> movieList, Client client)
         {
-            int input;
-            while (!int.TryParse(Console.ReadLine(), out input) || input > bound || input < 1)
+            MovieRental movieRental = new MovieRental(
+              new LowPriceMovieStoreStrategy(),
+              new LimitedEditionMovieRentalStrategy(),
+              new FamilyFriendlyMovieStoreStrategy());
+            /*
+            MovieRental movieRental = new MovieRental(
+              new LuxuryMovieStoreStrategy(),
+              new LongPeriodMovieRentalStrategy(),
+              new AdultsMovieStoreStrategy());
+            */
+
+            Console.WriteLine("\r\nWelcome to the movie rental!\r\n");
+
+            while (true)
             {
-                Console.WriteLine("\r\nYou've entered an invalid number. Try again:");
+                int index = AskWhichMovieToGet(movieList);
+
+                double moviePrice = movieRental.EstimatePrice(client, movieList[index - 1]);
+                DateTime returnDate = movieRental.EstimateRentalPeriod(client, movieList[index - 1]);
+                if (moviePrice > 0 && returnDate != DateTime.MinValue)
+                {
+                    Console.WriteLine("\r\nThe price of the movie \"" + movieList[index - 1].Name + "\" is: " + Math.Round(moviePrice, 2, MidpointRounding.AwayFromZero) + " eur");
+                    Console.WriteLine("Return by: " + returnDate + "\r\n");
+                }
+                else
+                {
+                    Console.WriteLine("\r\nSorry, this movie is not suitable for you\r\n");
+                }
+
+                if (AskIfExit())
+                {
+                    break;
+                }
             }
-            return input;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace MovieStore_Strategy
     {
         private String name;
         private DateTime releaseDate;
-        private int totalNoOfPurchases; // number of orders since release date
+        private int totalNoOfPurchases; // number of orders since the release date
         private MPAARating ageRating;
         private double basePrice;
 
