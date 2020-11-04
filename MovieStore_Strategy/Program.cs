@@ -54,7 +54,7 @@ namespace MovieStore_Strategy
             return GetIntInput(movieList.Count);
         }
 
-        static Boolean AskIfExit()
+        static bool AskIfExit()
         {
             Console.WriteLine("Would you like to exit the program?");
             Console.WriteLine("1 - yes\r\n2 - no");

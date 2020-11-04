@@ -6,8 +6,8 @@ namespace MovieStore_Strategy
 {
     interface MovieAvailabilityStrategy
     {
-        Boolean IsAppropriateAge(Client client, Movie movie);
-        Boolean IsLegal(Movie movie);
-        Boolean IsAlreadyInTheMarket(Movie movie);
+        bool IsAppropriateAge(Client client, Movie movie);
+        bool IsLegal(Movie movie);
+        bool IsAlreadyInTheMarket(Movie movie);
     }
 }
